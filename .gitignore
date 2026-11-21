@@ -3,3 +3,5 @@ rater-report*.html
 __pycache__/
 .venv/
 venv/
+.rater-cache.jsonl
+bench-report*
