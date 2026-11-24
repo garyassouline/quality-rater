@@ -60,6 +60,11 @@ blocks = [json.dumps({"@context": "https://schema.org", "@graph": [
 	{"@type": "WebPage", "author": {"@id": "https://ex.test/auteur/1#author"}}]})]
 ok(r.jsonld_facts(blocks)[0] == "Jeanne Martin", "auteur par @id garde meme si une simple reference suit sa definition")
 
+# --- la charte editoriale compte comme page A propos (adresse ou texte du lien)
+path_re, text_re = r.SITE_PAGES["a_propos"]
+ok(re.search(path_re, "/charte-editoriale") and re.search(path_re, "/notre-charte-editoriale-2024/")
+	and re.search(text_re, "charte éditoriale") and not re.search(path_re, "/charte-graphique"), "charte editoriale reconnue comme A propos")
+
 # --- tableur : pas de formule
 ok(r.cell("=HYPERLINK(1)") == "'=HYPERLINK(1)" and r.cell("ok") == "ok" and r.cell(3) == 3, "cellules protegees des formules")
 

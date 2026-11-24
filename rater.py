@@ -554,8 +554,10 @@ class LinkParser(HTMLParser):
 
 
 SITE_PAGES = {
+	# la charte editoriale tient lieu de page A propos sur beaucoup de sites de presse
 	"a_propos": (r"/(a-?propos|qui-sommes-nous|qui-suis-je|about|about-us|notre-histoire|l-?equipe|notre-equipe|team"
-		r"|presentation)/?$", r"^(a propos|à propos|qui sommes-nous|qui suis-je|about|notre histoire|l'équipe|notre équipe)"),
+		r"|presentation|(notre-)?charte-editoriale[\w-]*)/?$",
+		r"^(a propos|à propos|qui sommes-nous|qui suis-je|about|notre histoire|l'équipe|notre équipe|(notre )?charte [ée]ditoriale)"),
 	"contact": (r"/(contact|nous-contacter|contactez-nous|contact-us)/?$|^mailto:", r"^(contact|nous contacter|contactez-nous)"),
 	"mentions_legales": (r"/(mentions-legales|informations-legales|legal-notice|legal|imprint|impressum)/?$",
 		r"mentions l[ée]gales|informations l[ée]gales|legal notice|imprint|impressum"),
