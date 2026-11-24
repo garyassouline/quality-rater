@@ -362,7 +362,13 @@ def jsonld_facts(blocks):
 			walk(json.loads(b.strip().removeprefix("<![CDATA[").removesuffix("]]>")))
 		except ValueError:
 			pass
-	by_id = {n["@id"]: n for n in nodes if isinstance(n.get("@id"), str)}
+	# un meme @id peut revenir plus loin en simple reference ({"@id": ...}) : garder le noeud le plus complet,
+	# sinon la reference ecrase la definition et l'auteur designe par @id est perdu
+	by_id = {}
+	for n in nodes:
+		i = n.get("@id")
+		if isinstance(i, str) and len(n) > len(by_id.get(i, {})):
+			by_id[i] = n
 	types, author, dates = set(), "", {}
 	for n in nodes:
 		t = n.get("@type")
