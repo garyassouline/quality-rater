@@ -1032,6 +1032,17 @@ def rate_pages(cfg, cache, pages, sites, a, workers, prefix=""):
 		return [r for r in pool.map(one, enumerate(pages, 1)) if r]
 
 
+def attach_queries(pages, queries):
+	"""Requetes Search Console de chaque page : a son adresse finale, sinon a l'adresse demandee
+	(une page redirigee garde dans l'export les requetes de son ancienne adresse). Renvoie le nombre de pages servies."""
+	matched = 0
+	for p in pages:
+		q = queries.get(page_key(p["url"])) or queries.get(page_key(p.get("requested") or p["url"]))
+		p["queries"] = q["queries"] if q else []
+		matched += bool(q)
+	return matched
+
+
 def rate_site(url, a, cfg, cache, queries, exclude, out, workers, prefix=""):
 	"""Un site de bout en bout : pages, transparence, notation, synthese et rapports.
 	Renvoie sa ligne du tableau de reseau, ou None si aucune page n'a pu etre notee."""
@@ -1042,7 +1053,9 @@ def rate_site(url, a, cfg, cache, queries, exclude, out, workers, prefix=""):
 		for u in a.url:
 			try:
 				res = fetch(u)
-				pages.append(parse(clean(res["url"]), res["text"], res["x_robots"]))
+				pg = parse(clean(res["url"]), res["text"], res["x_robots"])
+				pg["requested"] = clean(u)  # adresse donnee, avant redirection : c'est elle que connait la Search Console
+				pages.append(pg)
 			except Exception as e:
 				log(f"{prefix}  ! {u} : {e}")
 	else:
@@ -1063,11 +1076,7 @@ def rate_site(url, a, cfg, cache, queries, exclude, out, workers, prefix=""):
 			sites[host(p["url"])] = site_signals(f"{pu.scheme}://{pu.netloc}/")
 	site = sites.get(host(url)) or next(iter(sites.values()))
 	if queries:
-		matched = 0
-		for p in pages:
-			q = queries.get(page_key(p["url"]))
-			p["queries"] = q["queries"] if q else []
-			matched += bool(q)
+		matched = attach_queries(pages, queries)
 		log(f"{prefix}  requetes Search Console trouvees pour {matched} pages sur {len(pages)}")
 	log(f"{prefix}Notation de {len(pages)} pages avec {cfg['model']} ...")
 	results = rate_pages(cfg, cache, pages, sites, a, workers, prefix)
